@@ -74,8 +74,11 @@ def evaluate_model(model, data_loader, dataset_name, model_name):
     return accuracy, avg_inference_time, precision, recall, f1, auc_roc
 
 def main():
+    print(f"Using device: {device}")
+
     with open("results/evaluation_results.txt", "w") as result_file, open("results/inference_time.txt", "w") as time_file:
         # Fashion MNIST
+        print("\nLoading FashionMNIST dataset...")
         transform_fmnist = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.Grayscale(num_output_channels=3),
@@ -83,23 +86,26 @@ def main():
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
         test_loader_fmnist = DataLoader(
-            datasets.FashionMNIST(root='data', train=False, transform=transform_fmnist, download=True),
+            datasets.FashionMNIST(root='../data', train=False, transform=transform_fmnist, download=False),
             batch_size=100, shuffle=False)
 
         # Food101
+        print("\nLoading Food101 dataset...")
         transform_f101 = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
         test_loader_f101 = DataLoader(
-            datasets.Food101(root='data', split='test', transform=transform_f101, download=True),
+            datasets.Food101(root='../data', split='test', transform=transform_f101, download=False),
             batch_size=101, shuffle=False)
 
         # Fashion MNIST Teacher
+        print("\nLoading FashionMNIST Teacher model...")
         fmnist_teacher = timm.create_model('resnetv2_50x1_bitm', pretrained=False, num_classes=10)
-        fmnist_teacher.load_state_dict(torch.load(os.path.join('teacher models', 'bitm_resnet50x1_FMnist.pth')))
+        fmnist_teacher.load_state_dict(torch.load(os.path.join('..', 'teacher models', 'bitm_resnet50x1_FMnist.pth')))
         fmnist_teacher.to(device)
+        print("Evaluating FashionMNIST Teacher model...")
         acc, time_taken, precision, recall, f1, auc_roc = evaluate_model(fmnist_teacher, test_loader_fmnist, "FashionMNIST", "Teacher")
         result_file.write(f"FashionMNIST Teacher Accuracy: {acc:.2f}%\n")
         time_file.write(f"FashionMNIST Teacher Inference Time: {time_taken:.6f} sec/image\n")
@@ -109,9 +115,11 @@ def main():
         result_file.write(f"FashionMNIST Teacher AUC-ROC: {auc_roc:.4f}\n")
 
         # Fashion MNIST Student
+        print("\nLoading FashionMNIST Student model...")
         fmnist_student = timm.create_model('mobilenetv3_small_100', pretrained=False, num_classes=10)
-        fmnist_student.load_state_dict(torch.load(os.path.join('student_models_mobilenet', 'ranked_model_1.pth')))
+        fmnist_student.load_state_dict(torch.load(os.path.join('..', 'student_models_mobilenet', 'ranked_model_1.pth')))
         fmnist_student.to(device)
+        print("Evaluating FashionMNIST Student model...")
         acc, time_taken, precision, recall, f1, auc_roc = evaluate_model(fmnist_student, test_loader_fmnist, "FashionMNIST", "Student")
         result_file.write(f"FashionMNIST Student Accuracy: {acc:.2f}%\n")
         time_file.write(f"FashionMNIST Student Inference Time: {time_taken:.6f} sec/image\n")
@@ -121,9 +129,11 @@ def main():
         result_file.write(f"FashionMNIST Student AUC-ROC: {auc_roc:.4f}\n")
 
         # Food101 Teacher
+        print("\nLoading Food101 Teacher model...")
         f101_teacher = timm.create_model('resnetv2_50x1_bitm', pretrained=False, num_classes=101)
-        f101_teacher.load_state_dict(torch.load(os.path.join('teacher models', 'bitm_resnet50x1_F101.pth')))
+        f101_teacher.load_state_dict(torch.load(os.path.join('..', 'teacher models', 'bitm_resnet50x1_F101.pth')))
         f101_teacher.to(device)
+        print("Evaluating Food101 Teacher model...")
         acc, time_taken, precision, recall, f1, auc_roc = evaluate_model(f101_teacher, test_loader_f101, "Food101", "Teacher")
         result_file.write(f"Food101 Teacher Accuracy: {acc:.2f}%\n")
         time_file.write(f"Food101 Teacher Inference Time: {time_taken:.6f} sec/image\n")
@@ -133,9 +143,11 @@ def main():
         result_file.write(f"Food101 Teacher AUC-ROC: {auc_roc:.4f}\n")
 
         # Food101 Student
+        print("\nLoading Food101 Student model...")
         f101_student = timm.create_model('efficientnet_b0', pretrained=False, num_classes=101)
-        f101_student.load_state_dict(torch.load(os.path.join('student models', 'best_student_B0_f101.pth')))
+        f101_student.load_state_dict(torch.load(os.path.join('..', 'student models', 'best_student_B0_f101.pth')))
         f101_student.to(device)
+        print("Evaluating Food101 Student model...")
         acc, time_taken, precision, recall, f1, auc_roc = evaluate_model(f101_student, test_loader_f101, "Food101", "Student")
         result_file.write(f"Food101 Student Accuracy: {acc:.2f}%\n")
         time_file.write(f"Food101 Student Inference Time: {time_taken:.6f} sec/image\n")

@@ -1,0 +1,4 @@
+FashionMNIST Teacher Inference Time: 0.004032 sec/image
+FashionMNIST Student Inference Time: 0.000328 sec/image
+Food101 Teacher Inference Time: 0.003403 sec/image
+Food101 Student Inference Time: 0.003409 sec/image
